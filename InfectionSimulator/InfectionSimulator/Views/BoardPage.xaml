@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:InfectionSimulator.Controls"
+             xmlns:viewmodels="clr-namespace:InfectionSimulator.ViewModels"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
+             x:Class="InfectionSimulator.Views.BoardPage"
+             x:DataType="viewmodels:BoardViewModel">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20*" />
+                <ColumnDefinition Width="80*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GridTapCommand}" />
+                </Grid.GestureRecognizers>
+
+                <StackLayout Padding="20">
+                    <Button Text="Play/Pause" Command="{Binding PlayPauseCommand}" />
+                    <Button Text="Reset" Command="{Binding ResetCommand}" />
+                    <Button Text="Settings" Command="{Binding SettingsCommand}" />
+                </StackLayout>
+                <StackLayout VerticalOptions="EndAndExpand" Padding="20" HorizontalOptions="Start">
+                    <StackLayout Padding="0,0,0,20">
+                        <Label Text="{Binding SelectedPerson.X, StringFormat='X coordinate: {0}'}" FontSize="Large" />
+                        <Label Text="{Binding SelectedPerson.Y, StringFormat='Y coordinate: {0}'}" FontSize="Large" />
+                        <Label Text="{Binding SelectedPerson.DaysInfected, StringFormat='Days infected: {0}'}" FontSize="Large" />
+                        <Label Text="{Binding SelectedPerson.TimesInfected, StringFormat='Times infected: {0}'}" FontSize="Large" />
+                        <Label Text="{Binding SelectedPerson.Immunity, StringFormat='Immunity: {0}'}" FontSize="Large" />
+                        <Label Text="{Binding SelectedPerson.IsHealthy, StringFormat='Is healthy: {0}'}" FontSize="Large" />
+                    </StackLayout>
+                    <StackLayout>
+                        <Label Text="{Binding SimulationStatusEnumLabel}" FontSize="Large" />
+                        <Label Text="{Binding SimulationDayLabel}" FontSize="Large" />
+                    </StackLayout>
+                </StackLayout>
+            </Grid>
+
+            <Grid Grid.Column="1">
+                <skia:SKCanvasView
+                    PaintSurface="OnCanvasViewPaintSurface"
+                    x:Name="Canvas"
+                    EnableTouchEvents="True"
+                    Touch="Canvas_Touch" />
+
+                <StackLayout
+                    MinimumWidthRequest="400"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Margin="20"
+                    Padding="20"
+                    BackgroundColor="White"
+                    IsVisible="{Binding IsSettingsOpen}"
+                    Opacity="0.9">
+                    <Label
+                        Text="Settings"
+                        FontSize="Large"
+                        HorizontalTextAlignment="Center" />
+
+                    <Label Text="Infectiousness" />
+                    <controls:NumericalEntry Text="{Binding Infectiousness}" AllowDecimals="True" />
+                    <Label Text="Simulation Days" />
+                    <controls:NumericalEntry Text="{Binding SimulationDaysProp}" AllowDecimals="False" />
+                    <Label Text="Recovery Days" />
+                    <controls:NumericalEntry Text="{Binding RecoveryDays}" AllowDecimals="False" />
+                    <Label Text="Person Immunity" />
+                    <controls:NumericalEntry Text="{Binding Immunity}" AllowDecimals="True" />
+                    <Label Text="Person Immunity increase" />
+                    <controls:NumericalEntry Text="{Binding ImmunityIncrease}" AllowDecimals="True" />
+
+                    <StackLayout Orientation="Horizontal">
+                        <Button Text="Save" Command="{Binding SettingsSaveCommand}" />
+                        <Button Text="Cancel" Command="{Binding SettingsCommand}" />
+                    </StackLayout>
+                </StackLayout>
+            </Grid>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

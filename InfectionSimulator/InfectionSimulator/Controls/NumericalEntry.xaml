@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Entry
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:InfectionSimulator.Behaviors"
+    xmlns:controls="clr-namespace:InfectionSimulator.Controls"
+    x:Class="InfectionSimulator.Controls.NumericalEntry"
+    x:DataType="controls:NumericalEntry"
+    x:Name="DecimalEntryControl"
+    Keyboard="Numeric">
+    <Entry.Behaviors>
+        <local:EntryNumericalValidationBehavior x:Name="EntryNumericalValidationBehavior" AllowDecimals="{Binding AllowDecimals}" />
+    </Entry.Behaviors>
+</Entry>
