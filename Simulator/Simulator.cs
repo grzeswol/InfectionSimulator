@@ -6,11 +6,18 @@ namespace Simulator
 {
     public class Simulator
     {
+        #region Fields
+
         private readonly IPerson[,] _personArray = new IPerson[0, 0];
         private readonly IRandom _randomGenerator;
-        private int RecoveryDays;
         private double ImmunityIncrease;
+        private int RecoveryDays;
+
         public double Infectiousness;
+
+        #endregion Fields
+
+        #region Constructors
 
         public Simulator(IPerson[,] personArray, IRandom randomGenerator, double immunity, double immunityIncrease, double infectiousness, int recoveryDays)
         {
@@ -23,11 +30,44 @@ namespace Simulator
             SetPeopleImmunity(immunity);
         }
 
+        #endregion Constructors
+
+        #region Methods
+
         private void SetPeopleImmunity(double immunity)
         {
             for (int i = 0; i < _personArray.GetLength(0); i++)
                 for (int j = 0; j < _personArray.GetLength(1); j++)
                     _personArray[i, j].Immunity = immunity;
+        }
+
+        public List<IPerson> GetPersonNeighbours(int x, int y)
+        {
+            var result = new List<IPerson>();
+            var xvals = new int[3] { -1, 0, 1 };
+            var yvals = new int[3] { -1, 0, 1 };
+            var arrayLength = _personArray.GetLength(0) - 1;
+            foreach (var xOffset in xvals)
+            {
+                foreach (var yOffset in yvals)
+                {
+                    if ((x + xOffset < 0 || y + yOffset < 0)
+                        || (xOffset == 0 && yOffset == 0)
+                        || (x + xOffset > arrayLength || y + yOffset > arrayLength))
+                        continue;
+
+                    result.Add(_personArray[x + xOffset, y + yOffset]);
+                }
+            }
+            return result;
+        }
+
+        public void SaveSettings(double immunity, double immunityIncrease, double infectiousness, int recoveryDays)
+        {
+            ImmunityIncrease = immunityIncrease;
+            Infectiousness = infectiousness;
+            RecoveryDays = recoveryDays;
+            SetPeopleImmunity(immunity);
         }
 
         public void UpdatePersonArray()
@@ -68,34 +108,6 @@ namespace Simulator
                 }
             }
         }
-
-        public List<IPerson> GetPersonNeighbours(int x, int y)
-        {
-            var result = new List<IPerson>();
-            var xvals = new int[3] { -1, 0, 1 };
-            var yvals = new int[3] { -1, 0, 1 };
-            var arrayLength = _personArray.GetLength(0) - 1;
-            foreach (var xOffset in xvals)
-            {
-                foreach (var yOffset in yvals)
-                {
-                    if ((x + xOffset < 0 || y + yOffset < 0)
-                        || (xOffset == 0 && yOffset == 0)
-                        || (x + xOffset > arrayLength || y + yOffset > arrayLength))
-                        continue;
-
-                    result.Add(_personArray[x + xOffset, y + yOffset]);
-                }
-            }
-            return result;
-        }
-
-        public void SaveSettings(double immunity, double immunityIncrease, double infectiousness, int recoveryDays)
-        {
-            ImmunityIncrease = immunityIncrease;
-            Infectiousness = infectiousness;
-            RecoveryDays = recoveryDays;
-            SetPeopleImmunity(immunity);
-        }
+        #endregion Methods
     }
 }

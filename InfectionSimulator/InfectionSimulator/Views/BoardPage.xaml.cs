@@ -10,12 +10,18 @@ namespace InfectionSimulator.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class BoardPage : ContentPage
     {
+        #region Fields
+
         private const int CELL_SPACING = 2;
         private const int SIZE = 100;
         private readonly BoardViewModel _viewModel;
-        private SKRect[,] _rectList;
         private int _cellSize = 1;
+        private SKRect[,] _rectList;
         private bool IsCanvasInitialized = false;
+
+        #endregion Fields
+
+        #region Constructors
 
         public BoardPage()
         {
@@ -35,17 +41,9 @@ namespace InfectionSimulator.Views
             SetRectList();
         }
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-            MessagingCenter.Unsubscribe<BoardViewModel>(this, Const.BOARD_RESET);
-            MessagingCenter.Unsubscribe<BoardViewModel>(this, Const.GRID_TAPPED);
-        }
+        #endregion Constructors
 
-        private void SetTimer()
-        {
-            App.AppTimer.Elapsed += AppTimer_Elapsed;
-        }
+        #region Methods
 
         private void AppTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
@@ -53,22 +51,19 @@ namespace InfectionSimulator.Views
             Canvas.InvalidateSurface();
         }
 
-        private void SetCoordinates()
+        private void Canvas_Touch(object sender, SKTouchEventArgs e)
         {
-            var info = Canvas.CanvasSize;
-            _cellSize = (int)Math.Min(info.Width / SIZE, info.Height / SIZE);
+            e.Handled = true;
+            SelectPerson(e.Location);
+        }
 
-            var xMargin = (int)((info.Width - SIZE * _cellSize) / 2);
-            var yMargin = (int)((info.Height - SIZE * _cellSize) / 2);
-
-            for (int x = 0; x < SIZE; x++)
-                for (int y = 0; y < SIZE; y++)
-                {
-                    var xCoordinate = x * _cellSize + xMargin + CELL_SPACING / 2;
-                    var yCoordinate = y * _cellSize + yMargin + CELL_SPACING / 2;
-
-                    _viewModel.SetPersonCoordinates(x, y, xCoordinate, yCoordinate);
-                }
+        private SKPaint GetPaint(Color color)
+        {
+            return new SKPaint
+            {
+                Style = SKPaintStyle.Fill,
+                Color = color.ToSKColor(),
+            };
         }
 
         private void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs args)
@@ -100,26 +95,6 @@ namespace InfectionSimulator.Views
                 }
         }
 
-        private SKPaint GetPaint(Color color)
-        {
-            return new SKPaint
-            {
-                Style = SKPaintStyle.Fill,
-                Color = color.ToSKColor(),
-            };
-        }
-
-        private void SetRectList()
-        {
-            _rectList = new SKRect[SIZE, SIZE];
-        }
-
-        private void Canvas_Touch(object sender, SKTouchEventArgs e)
-        {
-            e.Handled = true;
-            SelectPerson(e.Location);
-        }
-
         private void SelectPerson(SKPoint location)
         {
             _viewModel.StopTimer();
@@ -133,5 +108,42 @@ namespace InfectionSimulator.Views
                     }
                 }
         }
+
+        private void SetCoordinates()
+        {
+            var info = Canvas.CanvasSize;
+            _cellSize = (int)Math.Min(info.Width / SIZE, info.Height / SIZE);
+
+            var xMargin = (int)((info.Width - SIZE * _cellSize) / 2);
+            var yMargin = (int)((info.Height - SIZE * _cellSize) / 2);
+
+            for (int x = 0; x < SIZE; x++)
+                for (int y = 0; y < SIZE; y++)
+                {
+                    var xCoordinate = x * _cellSize + xMargin + CELL_SPACING / 2;
+                    var yCoordinate = y * _cellSize + yMargin + CELL_SPACING / 2;
+
+                    _viewModel.SetPersonCoordinates(x, y, xCoordinate, yCoordinate);
+                }
+        }
+
+        private void SetRectList()
+        {
+            _rectList = new SKRect[SIZE, SIZE];
+        }
+
+        private void SetTimer()
+        {
+            App.AppTimer.Elapsed += AppTimer_Elapsed;
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            MessagingCenter.Unsubscribe<BoardViewModel>(this, Const.BOARD_RESET);
+            MessagingCenter.Unsubscribe<BoardViewModel>(this, Const.GRID_TAPPED);
+        }
+
+        #endregion Methods
     }
 }

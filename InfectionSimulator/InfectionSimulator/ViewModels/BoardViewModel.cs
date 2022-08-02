@@ -10,41 +10,49 @@ namespace InfectionSimulator.ViewModels
 {
     internal class BoardViewModel : BaseViewModel
     {
-        private Simulator.Simulator _simulator { get; set; }
+        #region Properties
+
         private PersonViewModel[,] _persons { get; set; }
+        private Simulator.Simulator _simulator { get; set; }
+        private int SimulationDay { get; set; } = 0;
         private int SimulationDays { get; set; }
+        private SimulationStatusEnum SimulationStatusEnum { get; set; }
 
-        public PersonViewModel SelectedPerson { get; set; }
-        public ICommand PlayPauseCommand { get; set; }
-        public ICommand ResetCommand { get; set; }
-        public ICommand SettingsCommand { get; set; }
-        public ICommand SettingsSaveCommand { get; set; }
         public ICommand GridTapCommand { get; set; }
-
-        public int RecoveryDays { get; set; }
-
-        public bool IsSettingsOpen { get; set; }
-        public double Infectiousness { get; set; }
-        public int SimulationDaysProp { get; set; }
         public double Immunity { get; set; }
         public double ImmunityIncrease { get; set; }
-
-        private int SimulationDay { get; set; } = 0;
+        public double Infectiousness { get; set; }
+        public bool IsSettingsOpen { get; set; }
+        public ICommand PlayPauseCommand { get; set; }
+        public int RecoveryDays { get; set; }
+        public ICommand ResetCommand { get; set; }
+        public PersonViewModel SelectedPerson { get; set; }
+        public ICommand SettingsCommand { get; set; }
+        public ICommand SettingsSaveCommand { get; set; }
         public string SimulationDayLabel => "Day: " + SimulationDay;
-
-        private SimulationStatusEnum SimulationStatusEnum { get; set; }
+        public int SimulationDaysProp { get; set; }
         public string SimulationStatusEnumLabel => "Status: " + SimulationStatusEnum.ToString();
 
-        private void GridTap()
+
+        #endregion Properties
+
+        #region Constructors
+
+        public BoardViewModel(int size)
         {
-            IsSettingsOpen = false;
+            IsSettingsOpen = true;
+            SettingsCommand = new Command(CommandToExecute(() => OpenSettings()));
+            SettingsSaveCommand = new Command(CommandToExecute(() => SaveSettings()));
+            PlayPauseCommand = new Command(CommandToExecute(() => StartStopTimer()), CanExecuteCommand);
+            ResetCommand = new Command(CommandToExecute(() => ResetBoard(size)), CanExecuteCommand);
+            GridTapCommand = new Command(CommandToExecute(() => GridTap()));
 
-            if (SelectedPerson != null)
-                SelectedPerson.IsSelected = false;
-
-            SelectedPerson = null;
-            MessagingCenter.Send(this, Const.BOARD_RESET);
+            ResetBoard(size);
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         private bool CanExecuteCommand()
         {
@@ -60,10 +68,15 @@ namespace InfectionSimulator.ViewModels
             });
         }
 
-        private void RefreshCanExecute()
+        private void GridTap()
         {
-            (PlayPauseCommand as Command).RaiseCanExecuteChanged();
-            (ResetCommand as Command).RaiseCanExecuteChanged();
+            IsSettingsOpen = false;
+
+            if (SelectedPerson != null)
+                SelectedPerson.IsSelected = false;
+
+            SelectedPerson = null;
+            MessagingCenter.Send(this, Const.BOARD_RESET);
         }
 
         private void OpenSettings()
@@ -72,6 +85,12 @@ namespace InfectionSimulator.ViewModels
                 StopTimer();
 
             IsSettingsOpen = !IsSettingsOpen;
+        }
+
+        private void RefreshCanExecute()
+        {
+            (PlayPauseCommand as Command).RaiseCanExecuteChanged();
+            (ResetCommand as Command).RaiseCanExecuteChanged();
         }
 
         private void ResetBoard(int size)
@@ -99,6 +118,13 @@ namespace InfectionSimulator.ViewModels
             SimulationStatusEnum = SimulationStatusEnum.Stopped;
             SelectedPerson = null;
             MessagingCenter.Send(this, Const.BOARD_RESET);
+        }
+
+        private void SaveSettings()
+        {
+            _simulator.SaveSettings(Immunity, ImmunityIncrease, Infectiousness, RecoveryDays);
+            SetSmulationDays(SimulationDaysProp);
+            IsSettingsOpen = false;
         }
 
         private void SetRandomInfectedPersons(IPerson[,] personList)
@@ -134,11 +160,9 @@ namespace InfectionSimulator.ViewModels
             }
         }
 
-        private void SaveSettings()
+        internal PersonViewModel GetPerson(int x, int y)
         {
-            _simulator.SaveSettings(Immunity, ImmunityIncrease, Infectiousness, RecoveryDays);
-            SetSmulationDays(SimulationDaysProp);
-            IsSettingsOpen = false;
+            return _persons[x, y];
         }
 
         internal void SelectPerson(int x, int y)
@@ -148,24 +172,6 @@ namespace InfectionSimulator.ViewModels
 
             SelectedPerson = _persons[x, y] ?? new PersonViewModel();
             SelectedPerson.IsSelected = true;
-        }
-
-        internal void Tick()
-        {
-            if (SimulationDay >= SimulationDays)
-            {
-                App.AppTimer.Stop();
-                SimulationStatusEnum = SimulationStatusEnum.Finished;
-                RefreshCanExecute();
-                return;
-            }
-            _simulator.UpdatePersonArray();
-            SimulationDay++;
-        }
-
-        internal PersonViewModel GetPerson(int x, int y)
-        {
-            return _persons[x, y];
         }
 
         internal void SetPersonCoordinates(int x, int y, int xCoordinate, int yCoordinate)
@@ -184,16 +190,19 @@ namespace InfectionSimulator.ViewModels
             SimulationStatusEnum = SimulationStatusEnum.Paused;
         }
 
-        public BoardViewModel(int size)
+        internal void Tick()
         {
-            IsSettingsOpen = true;
-            SettingsCommand = new Command(CommandToExecute(() => OpenSettings()));
-            SettingsSaveCommand = new Command(CommandToExecute(() => SaveSettings()));
-            PlayPauseCommand = new Command(CommandToExecute(() => StartStopTimer()), CanExecuteCommand);
-            ResetCommand = new Command(CommandToExecute(() => ResetBoard(size)), CanExecuteCommand);
-            GridTapCommand = new Command(CommandToExecute(() => GridTap()));
-
-            ResetBoard(size);
+            if (SimulationDay >= SimulationDays)
+            {
+                App.AppTimer.Stop();
+                SimulationStatusEnum = SimulationStatusEnum.Finished;
+                RefreshCanExecute();
+                return;
+            }
+            _simulator.UpdatePersonArray();
+            SimulationDay++;
         }
+
+        #endregion Methods
     }
 }

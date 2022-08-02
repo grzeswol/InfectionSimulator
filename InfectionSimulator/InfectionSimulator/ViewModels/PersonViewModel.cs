@@ -4,13 +4,19 @@ namespace InfectionSimulator.ViewModels
 {
     internal class PersonViewModel : BaseViewModel, IPerson
     {
-        public bool IsHealthy { get; private set; }
+        #region Properties
+
+        public int DaysInfected { get; set; }
         public double Immunity { get; set; }
+        public bool IsHealthy { get; private set; }
+        public bool IsSelected { get; set; }
+        public int TimesInfected { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-        public bool IsSelected { get; set; }
-        public int DaysInfected { get; set; }
-        public int TimesInfected { get; set; }
+
+        #endregion Properties
+
+        #region Constructors
 
         public PersonViewModel()
         {
@@ -18,10 +24,13 @@ namespace InfectionSimulator.ViewModels
             IsSelected = false;
         }
 
-        public void SetPersonInfected()
+        #endregion Constructors
+
+        #region Methods
+
+        public void IncreaseImmunity(double immunityIncrease)
         {
-            IsHealthy = false;
-            TimesInfected++;
+            Immunity += immunityIncrease;
         }
 
         public void SetPersonHealthy()
@@ -30,9 +39,12 @@ namespace InfectionSimulator.ViewModels
             DaysInfected = 0;
         }
 
-        public void IncreaseImmunity(double immunityIncrease)
+        public void SetPersonInfected()
         {
-            Immunity += immunityIncrease;
+            IsHealthy = false;
+            TimesInfected++;
         }
+
+        #endregion Methods
     }
 }
